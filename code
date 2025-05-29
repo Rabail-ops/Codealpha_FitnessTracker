@@ -1,0 +1,97 @@
+import 'package:flutter/material.dart';
+
+class Workout {
+  final String type;
+  final int duration; // in minutes
+  final DateTime date;
+
+  Workout({required this.type, required this.duration, required this.date});
+}
+
+class FitnessTrackerApp extends StatefulWidget {
+  @override
+  _FitnessTrackerAppState createState() => _FitnessTrackerAppState();
+}
+
+class _FitnessTrackerAppState extends State<FitnessTrackerApp> {
+  final List<Workout> workouts = [];
+  final TextEditingController typeController = TextEditingController();
+  final TextEditingController durationController = TextEditingController();
+
+  void _addWorkout() {
+    final type = typeController.text.trim();
+    final duration = int.tryParse(durationController.text.trim()) ?? 0;
+
+    if (type.isNotEmpty && duration > 0) {
+      setState(() {
+        workouts.add(
+          Workout(type: type, duration: duration, date: DateTime.now()),
+        );
+        typeController.clear();
+        durationController.clear();
+      });
+    }
+  }
+
+  int get totalDuration {
+    return workouts.fold(0, (sum, item) => sum + item.duration);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Fitness Tracker',
+      home: Scaffold(
+        appBar: AppBar(title: Text('Fitness Tracker')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              TextField(
+                controller: typeController,
+                decoration: InputDecoration(
+                  labelText: 'Workout Type (e.g., Running)',
+                ),
+              ),
+              TextField(
+                controller: durationController,
+                decoration: InputDecoration(labelText: 'Duration (minutes)'),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: _addWorkout,
+                child: Text('Add Workout'),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Total Duration: $totalDuration mins',
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 20),
+              Expanded(
+                child:
+                    workouts.isEmpty
+                        ? Text('No workouts recorded.')
+                        : ListView.builder(
+                          itemCount: workouts.length,
+                          itemBuilder: (context, index) {
+                            final workout = workouts[index];
+                            return ListTile(
+                              title: Text(
+                                '${workout.type} - ${workout.duration} mins',
+                              ),
+                              subtitle: Text(
+                                '${workout.date.toLocal().toString().split(' ')[0]}',
+                              ),
+                            );
+                          },
+                        ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
